@@ -11,10 +11,22 @@ struct replace_type<T1*, T2, T3> {
     typedef T3* type;
 };
 
-/* T1 is functoin pointer, T2, T3 is reference */
+/* T1 is function pointer, argument type is same with T2. */
 template <class T1, class T2, class T3>
 struct replace_type<T1(*)(T2), T2, T3> {
-    typedef T3 (*type)(T3) ;
+    typedef T1 (*type)(T3) ;
+};
+
+/* T1 is function pointer, return type is same with T2. */
+template <class T1, class T2, class T3>
+struct replace_type<T2(*)(T1), T2, T3> {
+    typedef T3 (*type)(T1);
+};
+
+/* T1 is function pointer, both argument type and return type is same with T2. */
+template <class T2, class T3>
+struct replace_type<T2(*)(T2), T2, T3> {
+    typedef T3 (*type)(T3);
 };
 
 /* T1 is array */
@@ -42,18 +54,16 @@ int main()
     is_same = std::is_same<replace_type<int[], int, long>::type, long[]>::value;
     assert(is_same);
 
-    /* check if int const* [] is array */
-    is_same = std::is_array<int const*[]>::value;
-    assert(is_same);
-
     is_same = std::is_same<replace_type<int const*[10], int const, long>::type, long*[10]>::value;
-    assert(is_same);
-    
-    /* check if char& (*)(char&) is a pointer */
-    is_same = std::is_pointer<char& (*)(char&)>::value;
     assert(is_same);
 
     is_same = std::is_same<replace_type<char& (*)(char&), char&, long&>::type, long& (*)(long&)>::value;
+    assert(is_same);
+
+    is_same = std::is_same<replace_type<int* (*)(double), double, int&>::type, int* (*)(int&)>::value;
+    assert(is_same);
+
+    is_same = std::is_same<replace_type<int* (*)(double), int*, double*>::type, double*(*)(double)>::value;
     assert(is_same);
     return 0;
 }
