@@ -17,13 +17,13 @@ struct replace_type<T1(*)(T2), T2, T3> {
     typedef T3 (*type)(T3) ;
 };
 
-
 /* T1 is array */
 template <class T1, class T2, class T3>
 struct replace_type<T1[], T2, T3> {
     typedef T3 type[];
 };
 
+/* T1 is an array with fixed length */
 template <class T1, class T2, class T3, size_t n>
 struct replace_type<T1*[n], T2, T3> {
     typedef T3* type[n];
