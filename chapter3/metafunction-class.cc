@@ -1,5 +1,6 @@
 #include <boost/mpl/plus.hpp>
 #include <boost/mpl/int.hpp>
+#include <functional>
 #include <cassert>
 
 using namespace boost::mpl;
@@ -12,16 +13,21 @@ struct plus_mf {
         struct apply {
             typedef typename plus<T1, T2>::type type;
         };
+
+    /* metafunction forward */
+    //template <class T1, class T2>
+    //    struct apply: plus<T1, T2> { };
 };
 
 /**
  * function object(functor)
  */
-struct plus_f {
-    int operator () (int x, int y) {
-        return x + y;
-    }
-};
+//struct plus_f {
+//    int operator () (int x, int y) {
+//        return x + y;
+//    }
+//};
+struct plus_f: std::plus<int> {};
 
 /**
  */
