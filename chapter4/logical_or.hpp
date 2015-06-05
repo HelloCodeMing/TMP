@@ -3,18 +3,43 @@
 using mpl::true_;
 using mpl::false_;
 
+/**
+ * naive version
+ */
+
+template <class T1 = false_, class T2 = false_, class T3 = false_>
+struct naive_or {
+    typedef typename mpl::bool_<T1::type::value || 
+                                T2::type::value || 
+                                T3::type::value>::type type;
+    const static bool value = mpl::bool_<T1::type::value || 
+                                         T2::type::value || 
+                                         T3::type::value>::value;
+};
+
+template <class T1 = false_, class T2 = false_, class T3 = false_>
+struct logical_or2 : 
+    mpl::eval_if<T1,
+    true_,
+    logical_or2<T2, T3>> {
+};
+
+template <>
+struct logical_or2<> : false_ {};
+
+/**
+ * Robust version.
+ */
 template <class Cond, class ThenFunc, class ElseFunc>
 struct if_ { 
 };
 
 template <class ThenFunc, class ElseFunc>
-struct if_<true_, ThenFunc, ElseFunc> {
-    typedef typename ThenFunc::type type;
+struct if_<true_, ThenFunc, ElseFunc>: ThenFunc {
 };
 
 template <class ThenFunc, class ElseFunc>
-struct if_<false_, ThenFunc, ElseFunc> {
-    typedef typename ElseFunc::type type;
+struct if_<false_, ThenFunc, ElseFunc>: ElseFunc {
 };
 
 template <class Cond, class ThenFunc, class ElseFunc> 
@@ -24,19 +49,13 @@ struct eval_if:  if_<Cond, ThenFunc, ElseFunc>::type {
 template <class ...Arg> struct logical_or {};
 
 template <>
-struct logical_or<> {
-    typedef false_ type;
-    static const bool value = false;
+struct logical_or<> : false_ {
 };
 
 
 template <class Head, class ...Tail>
-struct logical_or<Head, Tail...> {
-    typedef typename eval_if< Head,
-                          true_,
-                          logical_or<Tail...>
-                        >::type type;
-    static const bool value = true;
+struct logical_or<Head, Tail...> :
+    eval_if< Head, true_, logical_or<Tail...>> {
 };
 
 
@@ -93,3 +112,8 @@ static_assert(std::is_same<
 static_assert(std::is_same<
                 logical_or< false_, false_, false_, false_>::type,
                 false_>::value, "false_, false_, false_, false_");
+
+static_assert(logical_or2<true_, Boom<int>>::type::value, "short circult or boom");
+static_assert(std::is_same<
+                logical_or2<false_, false_, false_>::type, 
+                false_>::value, "false_, false_, false_");
