@@ -3,6 +3,24 @@
 using mpl::true_;
 using mpl::false_;
 
+template <class Cond, class ThenFunc, class ElseFunc>
+struct if_ { 
+};
+
+template <class ThenFunc, class ElseFunc>
+struct if_<true_, ThenFunc, ElseFunc> {
+    typedef typename ThenFunc::type type;
+};
+
+template <class ThenFunc, class ElseFunc>
+struct if_<false_, ThenFunc, ElseFunc> {
+    typedef typename ElseFunc::type type;
+};
+
+template <class Cond, class ThenFunc, class ElseFunc> 
+struct eval_if:  if_<Cond, ThenFunc, ElseFunc>::type {
+};
+
 template <class ...Arg> struct logical_or {};
 
 template <>
@@ -11,9 +29,10 @@ struct logical_or<> {
     static const bool value = false;
 };
 
+
 template <class Head, class ...Tail>
 struct logical_or<Head, Tail...> {
-    typedef typename mpl::eval_if< Head,
+    typedef typename eval_if< Head,
                           true_,
                           logical_or<Tail...>
                         >::type type;
