@@ -7,6 +7,8 @@
 
 #include <boost/mpl/apply.hpp>
 #include <boost/mpl/plus.hpp>
+#include <boost/mpl/minus.hpp>
+#include <boost/mpl/multiplies.hpp>
 #include <boost/mpl/int.hpp>
 #include <boost/mpl/placeholders.hpp>
 #include <boost/mpl/vector_c.hpp>
@@ -17,6 +19,9 @@
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/identity.hpp>
 #include <boost/mpl/equal_to.hpp>
+#include <boost/mpl/not_equal_to.hpp>
+#include <boost/mpl/greater.hpp>
+
 
 namespace mpl = boost::mpl;
 using namespace mpl::placeholders;
