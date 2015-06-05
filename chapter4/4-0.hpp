@@ -7,8 +7,8 @@
  */
 template <class T>
 struct Boom {
-    typedef T* type;
-    typedef mpl::true_ value;
+    //typedef T* type;
+    //typedef mpl::true_ value;
 };
 
 static_assert(std::is_same<int, 
@@ -19,7 +19,7 @@ static_assert(std::is_same<int,
                             "or");
 static_assert(std::is_same<int,
                             mpl::if_<
-                            mpl::and_<mpl::false_, Boom<int&>::value>,
+                            mpl::and_<mpl::false_, Boom<int&>>,
                             int&, 
                             int>::type>::value,
                             "and");
