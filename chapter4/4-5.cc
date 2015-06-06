@@ -8,13 +8,22 @@ template <class Container>
 struct iterator_type
     : mpl::if_<
         std::is_const<Container>,
-        typename Container::iterator,
-        const typename Container::iterator> {
-          };
+        typename Container::const_iterator,
+        typename Container::iterator> {
+        };
+
+static_assert(std::is_same<
+                iterator_type<const std::vector<int> >::type,
+                std::vector<int>::const_iterator
+                >::value, "const iterator");
+
+static_assert(std::is_same<
+                iterator_type<std::vector<int> >::type,
+                std::vector<int>::iterator
+                >::value, "iterator");
 
 template <class Container, class value_type>
 typename iterator_type<Container>::type
-//typename Container::iterator
 container_find(Container& c, const value_type& v) {
     return std::find(c.begin(), c.end(), v);
 }
