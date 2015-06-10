@@ -23,7 +23,7 @@
 template <class first, class last, class init, class bo> 
 struct fold 
     :mpl::if_<
-        mpl::or_<std::is_same<first, last>, std::is_same<first, mpl::void_>>,
+        mpl::or_<std::is_same<first, last>, std::is_same<typename mpl::deref<first>::type, mpl::void_>>,
         //std::is_same<first, last>,
         init,
         fold<
