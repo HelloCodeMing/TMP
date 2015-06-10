@@ -30,20 +30,14 @@ struct logical_or2<> : false_ {};
 /**
  * Robust version.
  */
-template <class Cond, class ThenFunc, class ElseFunc>
-struct if_ { 
-};
+template <bool Cond, class Then, class Else>
+struct if_impl : Else {};
 
-template <class ThenFunc, class ElseFunc>
-struct if_<true_, ThenFunc, ElseFunc>: ThenFunc {
-};
+template <class Then, class Else> 
+struct if_impl<true, Then, Else>: Then {};
 
-template <class ThenFunc, class ElseFunc>
-struct if_<false_, ThenFunc, ElseFunc>: ElseFunc {
-};
-
-template <class Cond, class ThenFunc, class ElseFunc> 
-struct eval_if:  if_<Cond, ThenFunc, ElseFunc>::type {
+template <class Cond, class Then, class Else>
+struct if_: if_impl<Cond::value, Then, Else> {
 };
 
 template <class ...Arg> struct logical_or {};
@@ -55,7 +49,7 @@ struct logical_or<> : false_ {
 
 template <class Head, class ...Tail>
 struct logical_or<Head, Tail...> :
-    eval_if< Head, true_, logical_or<Tail...>> {
+    if_< Head, true_, logical_or<Tail...>> {
 };
 
 
