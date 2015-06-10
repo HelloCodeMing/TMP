@@ -23,3 +23,13 @@ static_assert(std::is_same<int,
                             int&, 
                             int>::type>::value,
                             "and");
+static_assert(
+        std::is_same<
+            int,
+            mpl::if_<
+                mpl::and_<mpl::false_, Boom<int&>>,
+                int&,
+                int
+                >::type
+            >::value,
+        "and");
