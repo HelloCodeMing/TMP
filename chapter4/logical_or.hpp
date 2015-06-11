@@ -31,25 +31,48 @@ struct logical_or2<> : false_ {};
  * Robust version.
  */
 template <bool Cond, class Then, class Else>
-struct if_impl : Else {};
+struct if_impl {
+    typedef Then type;
+};
 
 template <class Then, class Else> 
-struct if_impl<true, Then, Else>: Then {};
+struct if_impl<false, Then, Else> {
+    typedef Else type;
+};
 
 template <class Cond, class Then, class Else>
 struct if_: if_impl<Cond::value, Then, Else> {
 };
 
-template <class ...Arg> struct logical_or {};
+template <class Cond, class Then, class Else>
+struct eval_if: if_<Cond, Then, Else>::type {};
 
-template <>
-struct logical_or<> : false_ {
-};
 
+static_assert(
+        std::is_same<
+            int,
+            if_<true_, int, double>::type
+        >::value, 
+        "if true");
+
+static_assert(
+        std::is_same<
+            if_<true_, int, double>::type, 
+            mpl::if_<true_, int, double>::type
+        >::value, "eval");
+
+static_assert(
+        std::is_same<
+            double,
+            if_<false_, int, double>::type
+        >::value,
+        "if false");
+
+template <class ...Arg> struct logical_or: false_ {};
 
 template <class Head, class ...Tail>
 struct logical_or<Head, Tail...> :
-    if_< Head, true_, logical_or<Tail...>> {
+    eval_if<Head, true_, logical_or<Tail...>> {
 };
 
 
@@ -61,8 +84,7 @@ struct logical_or<Head, Tail...> :
  * Has no member "type", so will crash when instantied.
  */
 template <class T>
-struct Boom {
-};
+struct Boom {};
 
 /* The or_ */
 static_assert(mpl::or_< true_,

@@ -20,20 +20,28 @@
 /**
  * fold test
  */
+
+template <class Cond, class LHS, class RHS>
+struct plus_if
+    :mpl::eval_if<
+        Cond,
+        typename mpl::plus<LHS, RHS>
+     > {};
+
 template <class first, class last, class init, class bo> 
 struct fold 
-    :mpl::if_<
-        mpl::or_<std::is_same<first, last>, std::is_same<typename mpl::deref<first>::type, mpl::void_>>,
-        //std::is_same<first, last>,
+    :mpl::eval_if<
+        //mpl::or_<std::is_same<first, last>, std::is_same<typename mpl::deref<first>::type, mpl::void_>>,
+        std::is_same<first, last>,
         init,
         fold<
             typename mpl::next<first>::type,
             last,
-            typename mpl::apply<
-                bo,
-                init,
+            plus_if<
+                mpl::not_<std::is_same<first, mpl::void_>>,
+                init, 
                 typename mpl::deref<first>::type
-            >::type,
+            >,
             bo
         >
      >
