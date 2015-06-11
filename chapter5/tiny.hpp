@@ -1,5 +1,6 @@
+#ifndef TINY_HPP
+#define TINY_HPP
 #include "common-header.hpp"
-#include <boost/mpl/iterator_tags.hpp>
 
 struct none {};
 
@@ -7,8 +8,7 @@ struct tiny_tag {};
 
 template <class T0 = none,
           class T1 = none,
-          class T2 = none,
-          class T3 = none
+          class T2 = none
           >
 struct tiny {
     typedef tiny type;
@@ -16,13 +16,14 @@ struct tiny {
     typedef T0 t0;
     typedef T1 t1;
     typedef T2 t2;
-    typedef T3 t3;
 };
 
 template <class Tiny, class Pos>
 struct tiny_iterator {
     typedef mpl::random_access_iterator_tag category;
 };
+
+namespace boost { namespace mpl {
 
 template <class Tiny, class Pos>
 struct next<tiny_iterator<Tiny, Pos> > {
@@ -34,35 +35,31 @@ struct prior<tiny_iterator<Tiny, Pos> > {
     typedef tiny_iterator<Tiny, typename mpl::prior<Pos>::type> type;
 };
 
+}}
+
 template <class Tiny, int N>
 struct tiny_at;
 
 template <class Tiny>
-struct tiny_at{};
-
-template <class Tiny>
-struct tiny_at {
+struct tiny_at<Tiny, 0> {
     typedef typename Tiny::t0 type;
 };
 
 template <class Tiny>
-struct tiny_at {
+struct tiny_at<Tiny, 1> {
     typedef typename Tiny::t1 type;
 };
 
 template <class Tiny>
-struct tiny_at {
+struct tiny_at<Tiny, 2> {
     typedef typename Tiny::t2 type;
 };
 
-template <class Tiny>
-struct tiny_at {
-    typedef typename Tiny::t3 type;
-};
 
-template <class T0, class T1, class T2, class T3, class Pos>
-struct at<tiny<T0, T1, T2, T3>, Pos>
-    : tiny_at<tiny<T0, T1, T2, T3>, Pos::value> {
+namespace boost { namespace mpl {
+template <class T0, class T1, class T2, class Pos>
+struct at<tiny<T0, T1, T2>, Pos>
+    : tiny_at<tiny<T0, T1, T2>, Pos::value> {
 };
 
 template <>
@@ -78,7 +75,11 @@ struct deref<tiny_iterator<Tiny, Pos> >
 
 template <class Tiny, class Pos, class N>
 struct advance<tiny_iterator<Tiny, Pos>, N> {
-    typedef tiny_iterator<Tiny, typename mpl::plus<Pos, N>:type> type;
+    typedef 
+    typename tiny_iterator<
+                Tiny, 
+                typename mpl::plus<Pos, N>::type
+             >::type type;
 };
 
 template <class Tiny, class Pos1, class Pos2>
@@ -97,44 +98,102 @@ struct begin_impl<tiny_tag> {
     };
 };
 
-template <class T0, class T1, class T2, class T3>
-struct tiny_size 
-    : mpl::int_<4> {
-};
+}}
 
 template <class T0, class T1, class T2>
-struct tiny_size<T0, T1, T2, none>
+struct tiny_size
     : mpl::int_<3> {
 };
 
 template <class T0, class T1>
-struct tiny_size<T0, T1, none, none>
+struct tiny_size<T0, T1, none>
     : mpl::int_<2> {
 };
 
 template <class T0>
-struct tiny_size<T0, none, none, none>
+struct tiny_size<T0, none, none>
     : mpl::int_<1> {
 };
 
 template <>
-struct tiny_size<none, none, none, none>
+struct tiny_size<none, none, none>
     : mpl::int_<0> {
 };
 
+namespace boost { namespace mpl {
+
+template <>
+struct size_impl<tiny_tag> {
+    template <class Tiny>
+    struct apply 
+        :tiny_size<
+            typename Tiny::t0,
+            typename Tiny::t1,
+            typename Tiny::t2
+        > {
+    };
+};
 template <>
 struct end_impl<tiny_tag> {
     template <class Tiny>
     struct apply {
-        typedef tiny_iterator<
+        typedef typename tiny_iterator<
                 Tiny,
                 typename tiny_size<
                         typename Tiny::t0,
                         typename Tiny::t1,
-                        typename Tiny::t2,
-                        typename Tiny::t3
+                        typename Tiny::t2
                         >::type
-                >  type;
+                >::type  type;
     };
 };
 
+template <>
+struct clear_impl<tiny_tag> {
+    template <class Tiny>
+    struct apply 
+        : tiny<> {
+    };
+};
+
+template <>
+struct push_front_impl<tiny_tag> {
+    template <class Tiny, class T>
+    struct apply
+        : tiny<T, typename Tiny::t0, typename Tiny::t1> {
+    };
+};
+
+}} /* end of namespace boost::mpl */
+template <class Tiny, class T, int Size>
+struct tiny_push_back;
+
+template <class Tiny, class T>
+struct tiny_push_back<Tiny, T, 0> 
+    : tiny<T>{
+};
+
+template <class Tiny, class T>
+struct tiny_push_back<Tiny, T, 1>
+    : tiny<typename Tiny::t0, T> {
+};
+
+template <class Tiny, class T>
+struct tiny_push_back<Tiny, T, 2>
+    : tiny<typename Tiny::t0, typename Tiny::t1, T> {
+};
+
+namespace boost { namespace mpl {
+template <>
+struct push_back_impl<tiny_tag> {
+    template <class Tiny, class T>
+    struct apply 
+        : tiny_push_back<
+            Tiny,
+            T,
+            mpl::size<Tiny>::value
+        >{
+    };
+};
+}}/* end of namespace boost::mpl */
+#endif
