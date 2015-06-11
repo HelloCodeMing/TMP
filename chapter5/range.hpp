@@ -22,6 +22,7 @@ struct make_range
 /**
  * Test
  */
+namespace range_test {
 typedef mpl::vector_c<int, 1, 2, 3, 4> vec;
 typedef mpl::begin<vec>::type first;
 typedef mpl::end<vec>::type last;
@@ -37,6 +38,6 @@ static_assert(
             elements
         >::value, 
         "equal");
-
+}/* end of anonymous namespace */
 
 #endif

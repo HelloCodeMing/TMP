@@ -22,8 +22,9 @@
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/vector_c.hpp>
 #include <boost/mpl/at.hpp>
-#include <boost/mpl/iterator_range.hpp>
 
+// iterator
+#include <boost/mpl/iterator_range.hpp>
 // arithmetic
 #include <boost/mpl/int.hpp>
 #include <boost/mpl/bool.hpp>
