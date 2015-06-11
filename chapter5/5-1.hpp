@@ -1,13 +1,5 @@
 #include "common-header.hpp"
-
-template <int from, int to>
-struct make_range
-    :mpl::copy<
-        mpl::range_c<int, from, to>,
-        mpl::back_inserter<mpl::vector<> >
-     >
-{};
-
+#include "range.hpp"
 
 template <class Seq>
 struct double_first_half {
@@ -19,7 +11,7 @@ struct double_first_half {
 
     typedef typename 
     mpl::transform< 
-        typename make_range<0, mpl::size<Seq>::value-1>::type,
+        typename make_range<0, mpl::size<Seq>::value>::type,
         mpl::eval_if<
             mpl::less<_1, last>,
             mpl::multiplies<
