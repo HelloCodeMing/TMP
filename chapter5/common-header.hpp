@@ -25,6 +25,7 @@
 
 // iterator
 #include <boost/mpl/iterator_range.hpp>
+
 // arithmetic
 #include <boost/mpl/int.hpp>
 #include <boost/mpl/bool.hpp>
@@ -41,6 +42,7 @@
 #include <boost/mpl/find.hpp>
 #include <boost/mpl/push_back.hpp>
 #include <boost/mpl/pop_back.hpp>
+#include <boost/mpl/pop_front.hpp>
 #include <boost/mpl/begin.hpp>
 #include <boost/mpl/front.hpp>
 #include <boost/mpl/end.hpp>
@@ -49,6 +51,8 @@
 #include <boost/mpl/prior.hpp>
 #include <boost/mpl/advance.hpp>
 #include <boost/mpl/size.hpp>
+#include <boost/mpl/insert.hpp>
+#include <boost/mpl/erase.hpp>
 
 
 namespace mpl = boost::mpl;

@@ -21,6 +21,7 @@ struct tiny {
 template <class Tiny, class Pos>
 struct tiny_iterator {
     typedef mpl::random_access_iterator_tag category;
+    typedef tiny_iterator<Tiny, Pos> type;
 };
 
 namespace boost { namespace mpl {
@@ -37,7 +38,7 @@ struct prior<tiny_iterator<Tiny, Pos> > {
 
 }}
 
-template <class Tiny, int N>
+template <class Tiny, long N>
 struct tiny_at;
 
 template <class Tiny>
@@ -57,10 +58,11 @@ struct tiny_at<Tiny, 2> {
 
 
 namespace boost { namespace mpl {
-template <class T0, class T1, class T2, class Pos>
-struct at<tiny<T0, T1, T2>, Pos>
-    : tiny_at<tiny<T0, T1, T2>, Pos::value> {
-};
+
+//template <class T0, class T1, class T2, class Pos>
+//struct at<tiny<T0, T1, T2>, Pos>
+//    : tiny_at<tiny<T0, T1, T2>, Pos::value> {
+//};
 
 template <>
 struct at_impl<tiny_tag> {
@@ -70,7 +72,7 @@ struct at_impl<tiny_tag> {
 
 template <class Tiny, class Pos>
 struct deref<tiny_iterator<Tiny, Pos> > 
-    : at<Tiny, Pos> {
+    : mpl::at<Tiny, Pos> {
 };
 
 template <class Tiny, class Pos, class N>
@@ -165,6 +167,7 @@ struct push_front_impl<tiny_tag> {
 };
 
 }} /* end of namespace boost::mpl */
+
 template <class Tiny, class T, int Size>
 struct tiny_push_back;
 
@@ -196,4 +199,52 @@ struct push_back_impl<tiny_tag> {
     };
 };
 }}/* end of namespace boost::mpl */
+
+
+namespace test_tiny {
+    
+typedef tiny<short, unsigned, int> t1;
+typedef mpl::deref<mpl::begin<t1>::type>::type head;
+static_assert(
+        std::is_same<
+            head,
+            short
+        >::value,
+        "begin");
+
+typedef mpl::next<mpl::begin<t1>::type>::type body;
+static_assert(
+        std::is_same<
+            mpl::deref<body>::type,
+            unsigned
+        >::value,
+        "next");
+
+/* test for fold */
+
+typedef tiny<mpl::int_<1>, mpl::int_<2>, mpl::int_<3> > t2;
+typedef mpl::fold<t2, mpl::int_<0>, mpl::plus<_, _> >::type t3;
+static_assert(
+        mpl::equal_to<
+            t3,
+            mpl::int_<6>
+        >::value,
+        "fold");
+
+/* test for equal */
+static_assert(
+        mpl::equal<
+            t1,
+            tiny<short, unsigned, int>
+        >::value,
+        "equal");
+
+/* test for at */
+static_assert(
+        std::is_same<
+            mpl::at_c<t1, 1>::type,
+            unsigned
+        >::value,
+        "at");
+} /* end of namespace test_tiny */
 #endif

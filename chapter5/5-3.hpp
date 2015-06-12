@@ -1,50 +1,52 @@
 #include "common-header.hpp"
 #include "slice.hpp"
+#include "tiny.hpp"
 
-struct tiny_tag{};
-template <class IteratorTag> struct insert_impl;
+template <class Tiny, int Pos, class T>
+struct tiny_insert;
+
+template <class Tiny, class T>
+struct tiny_insert<Tiny, 0, T> 
+    :tiny<T, typename Tiny::t0, typename Tiny::t1> {
+};
+
+template <class Tiny, class T>
+struct tiny_insert<Tiny, 1, T>
+    :tiny<typename Tiny::t0, T, typename Tiny::t1> {
+};
+
+template <class Tiny, class T>
+struct tiny_insert<Tiny, 2, T>
+    :tiny<typename Tiny::t0, typename Tiny::t1,T> {
+};
+
+namespace boost { namespace mpl {
 
 template <>
 struct insert_impl<tiny_tag> {
-    template <class Tiny, class pos, class T>
-    struct apply {
-        typedef typename slice<typename mpl::begin<Tiny>::type, pos>::type first_part;
-        typedef typename slice<pos, typename mpl::end<Tiny>::type >::type last_part;
-        typedef 
-        typename mpl::copy<
-                    last_part,
-                    mpl::back_inserter<
-                        typename mpl::push_back<first_part, T>::type
-                    >
-                >::type type;
-     };
+    template <class Tiny, class Pos, class X>
+    struct apply
+        :tiny_insert<
+            Tiny, 
+            mpl::distance<typename mpl::begin<Tiny>::type, Pos>::value,
+            X> {
+    };
 };
 
+
+}}/* end of namespace boost::mpl */
 
 /**
  * Test.
  */
 namespace test_5_3{
-typedef mpl::vector_c<int, 1, 2, 3> vec;
-typedef mpl::apply<
-            insert_impl<tiny_tag>, 
-            vec, 
-            mpl::begin<vec>::type, 
-            mpl::int_<4> 
-        >::type vec1;
 
+typedef tiny<short, int> t1;
+typedef mpl::insert<t1, mpl::begin<t1>::type, long>::type t2;
 static_assert(
-        mpl::front<vec1>::type::value == 4,
-        "insert impl");
-
-typedef mpl::apply<
-            insert_impl<tiny_tag>,
-            vec,
-            mpl::next<mpl::begin<vec>::type >::type,
-            mpl::int_<4>
-        >::type vec2;
-
-static_assert(
-        mpl::at<vec2, mpl::int_<1> >::type::value == 4,
-        "insert impl 2");
+        std::is_same<
+            mpl::front<t2>::type,
+            long
+        >::value,
+        "insert");
 }/* end of test_5_3 namespace */
