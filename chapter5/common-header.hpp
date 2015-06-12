@@ -53,6 +53,7 @@
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/insert.hpp>
 #include <boost/mpl/erase.hpp>
+#include <boost/mpl/reverse.hpp>
 
 
 namespace mpl = boost::mpl;

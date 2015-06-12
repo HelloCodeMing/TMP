@@ -16,7 +16,22 @@ struct dimensions {
             >::type detail;
 };
 
+template <class D, class Pos>
+struct dimensions_iterator {
+    typedef mpl::bidirectional_iterator_tag category;
+};
+
 namespace boost { namespace mpl {
+
+template <class D, class Pos>
+struct next<dimensions_iterator<D, Pos> > 
+    :dimensions_iterator<D, typename mpl::next<Pos>::type> {
+};
+
+template <class D, class Pos>
+struct prior<dimensions_iterator<D, Pos> >
+    :dimensions_iterator<D, typename mpl::prior<Pos>::type> {
+};
 
 template <>
 struct size_impl<dimensions_tag> {
@@ -35,10 +50,50 @@ struct at_impl<dimensions_tag> {
 };
 
 template <>
+struct begin_impl<dimensions_tag> {
+    template <class Dimensions>
+    struct apply
+        :dimensions_iterator<Dimensions, mpl::int_<0> > {
+    };
+};
+
+template <>
+struct end_impl<dimensions_tag> {
+    template <class Dimensions>
+    struct apply
+        :dimensions_iterator<Dimensions, typename mpl::size<Dimensions> > {
+    };
+};
+
+template <>
+struct clear_impl<dimensions_tag> {
+    template <class Dimensions>
+    struct apply
+        :dimensions<char > {
+    };
+};
+
+
+template <class D, class Pos>
+struct deref<dimensions_iterator<D, Pos> > 
+    :mpl::at<D, Pos> {
+};
+
+template <>
 struct push_front_impl<dimensions_tag> {
     template <class Dimensions, class T>
     struct apply
         :dimensions<typename Dimensions::value[T::value]> {
+    };
+};
+
+template <>
+struct push_back_impl<dimensions_tag> {
+    template <class Dimensions, class T>
+    struct apply {
+        typedef typename mpl::reverse<Dimensions>::type::value reversed_value;
+        typedef reversed_value reversed_type[T::value];
+        typedef typename mpl::reverse<dimensions<reversed_type> >::type type;
     };
 };
 
@@ -77,5 +132,13 @@ static_assert(
             dimensions<char [1][10][5][2]>::detail
         >::value, 
         "push_front, equal");
+
+typedef mpl::push_back<seq, mpl::int_<1> >::type seq2;
+static_assert(
+        mpl::equal<
+            seq2::detail,
+            dimensions<char [10][5][2][1]>::detail
+        >::value,
+        "push_back equal");
 }/* end of namespace test_dimensions */
 
