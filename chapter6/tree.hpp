@@ -4,8 +4,8 @@ struct none;
 
 template <class Root = none, class LHS = none, class RHS = none>
 struct tree {
+    typedef tree type;
     typedef Root root;
-    typedef tree<Root, LHS, RHS> type;
     typedef 
     typename mpl::if_<
                 std::is_scalar<LHS>,
@@ -16,11 +16,12 @@ struct tree {
     typename mpl::if_<
                 std::is_scalar<RHS>,
                 tree<RHS>,
-                LHS
+                RHS
             >::type rhs;
 };
 
 struct none: tree<> {};
+
 template <class ...Arg> 
 struct splice {};
 
@@ -49,6 +50,7 @@ template <class root>
 struct preorder_view<tree<root, none, none> > 
     :mpl::vector<root> {
 };
+
 
 template <class Tree>
 struct inorder_view
@@ -85,7 +87,7 @@ typedef tree<
             tree<void*, int, long>,
             char
         > tree_seq;
-
+            
 static_assert(
         mpl::equal<
             mpl::vector<short, int, long>,
@@ -118,4 +120,15 @@ static_assert(
         >::value,
         "postorder");
 
+typedef tree<
+            mpl::int_<0>,
+            tree<mpl::int_<1>, mpl::int_<2>, mpl::int_<3> >,
+            mpl::int_<4>
+        > tree_seq1;
+static_assert(
+        mpl::equal<
+            inorder_view<tree_seq1>::type,
+            mpl::vector_c<int, 1, 3, 0, 4>
+        >::value,
+        "inorder2");
 } /* end of namespace test_5_10 */

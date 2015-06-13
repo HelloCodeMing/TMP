@@ -15,7 +15,7 @@ struct tree {
     typename mpl::if_<
                 std::is_scalar<RHS>,
                 tree<RHS>,
-                LHS
+                RHS
             >::type rhs;
 };
 
