@@ -23,15 +23,6 @@ struct dimensions_iterator {
 
 namespace boost { namespace mpl {
 
-template <class D, class Pos>
-struct next<dimensions_iterator<D, Pos> > 
-    :dimensions_iterator<D, typename mpl::next<Pos>::type> {
-};
-
-template <class D, class Pos>
-struct prior<dimensions_iterator<D, Pos> >
-    :dimensions_iterator<D, typename mpl::prior<Pos>::type> {
-};
 
 template <>
 struct size_impl<dimensions_tag> {
@@ -43,10 +34,15 @@ struct size_impl<dimensions_tag> {
 
 template <>
 struct at_impl<dimensions_tag> {
-    template <class Dimensions, class Pos>
+    template <class D, class Pos>
     struct apply
-        :mpl::at<typename Dimensions::detail, Pos> {
+        :mpl::at<typename D::detail, Pos> {
     };
+};
+
+template <class D, class Pos>
+struct deref<dimensions_iterator<D, Pos> > 
+    :mpl::at<D, Pos> {
 };
 
 template <>
@@ -61,8 +57,18 @@ template <>
 struct end_impl<dimensions_tag> {
     template <class Dimensions>
     struct apply
-        :dimensions_iterator<Dimensions, typename mpl::size<Dimensions> > {
+        :dimensions_iterator<Dimensions, mpl::size<Dimensions> > {
     };
+};
+
+template <class D, class Pos>
+struct next<dimensions_iterator<D, Pos> > 
+    :dimensions_iterator<D, typename mpl::next<Pos>::type> {
+};
+
+template <class D, class Pos>
+struct prior<dimensions_iterator<D, Pos> >
+    :dimensions_iterator<D, typename mpl::prior<Pos>::type> {
 };
 
 template <>
@@ -74,10 +80,6 @@ struct clear_impl<dimensions_tag> {
 };
 
 
-template <class D, class Pos>
-struct deref<dimensions_iterator<D, Pos> > 
-    :mpl::at<D, Pos> {
-};
 
 template <>
 struct push_front_impl<dimensions_tag> {

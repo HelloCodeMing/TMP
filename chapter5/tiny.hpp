@@ -36,7 +36,7 @@ struct prior<tiny_iterator<Tiny, Pos> > {
     typedef tiny_iterator<Tiny, typename mpl::prior<Pos>::type> type;
 };
 
-}}
+}}/* end of namespace boost::mpl */
 
 template <class Tiny, long N>
 struct tiny_at;
@@ -100,7 +100,7 @@ struct begin_impl<tiny_tag> {
     };
 };
 
-}}
+}}/* end of namespace boost::mpl */
 
 template <class T0, class T1, class T2>
 struct tiny_size
