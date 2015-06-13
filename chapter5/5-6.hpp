@@ -7,7 +7,7 @@ struct dimensions_tag;
 template <class T>
 struct dimensions {
     typedef dimensions_tag tag;
-    typedef dimensions<T> type;
+    typedef dimensions type;
     typedef T value;
     typedef
     typename mpl::reverse_transform<
