@@ -1,28 +1,33 @@
 #include "common-header.hpp"
 #include "splice.hpp"
 
-struct none;
+using mpl::void_;
+struct tree_tag;
 
 template <class Node>
 struct is_tree;
 
-template <class Root = none, class LHS = none, class RHS = none>
+template <class Root = void_, class LHS = void_, class RHS = void_>
 struct tree {
-    typedef Root root;
+    typedef tree_tag tag;
     typedef tree type;
-    typedef 
-    typename mpl::if_<
-                is_tree<LHS>,
-                LHS,
-                tree<LHS>
-            >::type lhs;
-    typedef 
-    typename mpl::if_<
-                is_tree<RHS>,
-                RHS,
-                tree<RHS>
-            >::type rhs;
+    typedef Root root;
+    typedef LHS lhs;
+    typedef RHS rhs;
+//    typedef 
+//    typename mpl::if_<
+//                is_tree<LHS>,
+//                LHS,
+//                tree<LHS>
+//            >::type lhs;
+//    typedef 
+//    typename mpl::if_<
+//                is_tree<RHS>,
+//                RHS,
+//                tree<RHS>
+//            >::type rhs;
 };
+
 
 template <class Node>
 struct is_tree: false_ {};
@@ -31,45 +36,59 @@ template <class root, class lhs, class rhs>
 struct is_tree<tree<root, lhs, rhs> > :true_ {};
 
 template <class Node>
-struct preorder_view 
+struct preorder_view
+    :mpl::vector<Node> {
+};
+
+template <>
+struct preorder_view<>
+    :mpl::vector<> {
+};
+
+template <class Root, class lhs, class rhs>
+struct preorder_view<tree<Root, lhs, rhs> >
     :splice<
-        mpl::vector<typename Node::root>,
-        typename preorder_view<typename Node::lhs>::type,
-        typename preorder_view<typename Node::rhs>::type
-    >::type {
-};
-
-template <class root>
-struct preorder_view<tree<root, none, none> > 
-    :mpl::vector<root> {
-};
-
-template <class Tree>
-struct inorder_view
-    :splice<
-        typename inorder_view<typename Tree::lhs>::type,
-        mpl::vector<typename Tree::root>,
-        typename inorder_view<typename Tree::rhs>::type
-     > {
-};
-
-template <class root>
-struct inorder_view<tree<root, none, none> >
-    :mpl::vector<root> {
-};
-
-template <class Tree>
-struct postorder_view
-    :splice<
-        typename postorder_view<typename Tree::lhs>::type,
-        typename postorder_view<typename Tree::rhs>::type,
-        mpl::vector<typename Tree::root>
+        mpl::vector<Root>,
+        typename preorder_view<lhs>::type,
+        typename preorder_view<rhs>::type
     > {
 };
 
-template <class root>
-struct postorder_view<tree<root, none, none> > 
-    :mpl::vector<root> {
+template <class Node>
+struct inorder_view
+    :mpl::vector<Node> {
+};
+
+template <>
+struct inorder_view<void_>
+    :mpl::vector<> {
+};
+
+template <class root, class lhs, class rhs>
+struct inorder_view<tree<root, lhs, rhs>>
+    :splice<
+        typename inorder_view<lhs>::type,
+        mpl::vector<root>,
+        typename inorder_view<rhs>::type
+    > {
+};
+
+template <class Node>
+struct postorder_view
+    :mpl::vector<Node> {
+};
+
+template <>
+struct postorder_view<void_> 
+    :mpl::vector<> {
+};
+template <class root, class lhs, class rhs>
+struct postorder_view<tree<root, lhs, rhs>>
+    :splice<
+        typename postorder_view<lhs>::type,
+        typename postorder_view<rhs>::type,
+        mpl::vector<root>
+    >::type {
 };
 
 namespace test_5_10 {

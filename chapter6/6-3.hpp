@@ -7,7 +7,7 @@ struct push_back_impl<tree_tag> {
     template <class Item, class Node>
     struct apply
         :mpl::eval_if<
-            mpl::less<Item, Node>,
+            mpl::less<Node, Item>,
             tree<Item, Node>,
             tree<Item, void_, Node>
          > {
@@ -37,7 +37,7 @@ struct push_back_impl<tree_tag> {
 
     template <class Node>
     struct apply<void_, Node> 
-        : tree<Node> {
+        :Node {
     };
 };
 
@@ -52,7 +52,7 @@ struct binary_tree_inserter {
 namespace test_6_3 {
 
 typedef mpl::copy<
-            mpl::vector_c<int, 3, 4>,
+            mpl::vector_c<int, 4, 3>,
             binary_tree_inserter<tree<> >
         >::type bst;
 
@@ -69,10 +69,11 @@ typedef mpl::copy<
             binary_tree_inserter<tree<> >
         >::type bst1;
 
-//static_assert(
-//        mpl::equal<
-//            inorder_view<bst>::type,
-//            mpl::vector_c<int, 2, 10, 11, 17, 25>
-//        >::value,
-//        "binary_tree_inserter");
+static_assert(
+        mpl::equal<
+            inorder_view<bst1>::type,
+            mpl::vector_c<int, 2, 10, 11, 17, 25>,
+            mpl::equal_to<_, _>
+        >::value,
+        "2, 10, 11, 17, 25");
 } /* end of namesapce test_6_3 */

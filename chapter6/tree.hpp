@@ -54,6 +54,11 @@ struct inorder_view
     :mpl::vector<Node> {
 };
 
+template <>
+struct inorder_view<void_>
+    :mpl::vector<> {
+};
+
 template <class root, class lhs, class rhs>
 struct inorder_view<tree<root, lhs, rhs>>
     :splice<
