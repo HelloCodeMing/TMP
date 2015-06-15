@@ -1,83 +1,80 @@
 #include "common-header.hpp"
+#include "splice.hpp"
 
-struct none;
+using mpl::void_;
+struct tree_tag;
 
-template <class Root = none, class LHS = none, class RHS = none>
+template <class Node>
+struct is_tree;
+
+template <class Root = void_, class LHS = void_, class RHS = void_>
 struct tree {
+    typedef tree_tag tag;
     typedef tree type;
     typedef Root root;
-    typedef 
-    typename mpl::if_<
-                std::is_scalar<LHS>,
-                tree<LHS>,
-                LHS
-            >::type lhs;
-    typedef 
-    typename mpl::if_<
-                std::is_scalar<RHS>,
-                tree<RHS>,
-                RHS
-            >::type rhs;
-};
-
-struct none: tree<> {};
-
-template <class ...Arg> 
-struct splice {};
-
-template <class Seq>
-struct splice<Seq>: Seq {};
-
-template <class Head, class ...Tail>
-struct splice<Head, Tail...>
-    :mpl::copy<
-        typename splice<Tail...>::type,
-        mpl::back_inserter<Head>
-    > {
+    typedef LHS lhs;
+    typedef RHS rhs;
+//    typedef 
+//    typename mpl::if_<
+//                is_tree<LHS>,
+//                LHS,
+//                tree<LHS>
+//            >::type lhs;
+//    typedef 
+//    typename mpl::if_<
+//                is_tree<RHS>,
+//                RHS,
+//                tree<RHS>
+//            >::type rhs;
 };
 
 
-template <class Tree>
-struct preorder_view 
+template <class Node>
+struct is_tree: false_ {};
+
+template <class root, class lhs, class rhs>
+struct is_tree<tree<root, lhs, rhs> > :true_ {};
+
+template <class Node>
+struct preorder_view
+    :mpl::vector<Node> {
+};
+
+template <class Root, class lhs, class rhs>
+struct preorder_view<tree<Root, lhs, rhs> >
     :splice<
-        mpl::vector<typename Tree::root>,
-        typename preorder_view<typename Tree::lhs>::type,
-        typename preorder_view<typename Tree::rhs>::type
+        mpl::vector<Root>,
+        typename preorder_view<lhs>::type,
+        typename preorder_view<rhs>::type
     > {
 };
 
-template <class root>
-struct preorder_view<tree<root, none, none> > 
-    :mpl::vector<root> {
-};
-
-
-template <class Tree>
+template <class Node>
 struct inorder_view
-    :splice<
-        typename inorder_view<typename Tree::lhs>::type,
-        mpl::vector<typename Tree::root>,
-        typename inorder_view<typename Tree::rhs>::type
-     > {
+    :mpl::vector<Node> {
 };
 
-template <class root>
-struct inorder_view<tree<root, none, none> >
-    :mpl::vector<root> {
-};
-
-template <class Tree>
-struct postorder_view
+template <class root, class lhs, class rhs>
+struct inorder_view<tree<root, lhs, rhs>>
     :splice<
-        typename postorder_view<typename Tree::lhs>::type,
-        typename postorder_view<typename Tree::rhs>::type,
-        mpl::vector<typename Tree::root>
+        typename inorder_view<lhs>::type,
+        mpl::vector<root>,
+        typename inorder_view<rhs>::type
     > {
 };
 
-template <class root>
-struct postorder_view<tree<root, none, none> > 
-    :mpl::vector<root> {
+template <class Node>
+struct postorder_view
+    :mpl::vector<Node> {
+};
+
+template <class root, class lhs, class rhs>
+struct postorder_view<tree<root, lhs, rhs>>
+    :splice<
+        typename postorder_view<lhs>::type,
+        typename postorder_view<rhs>::type,
+        mpl::vector<root>
+    >::type {
 };
 
 namespace test_5_10 {
@@ -87,7 +84,13 @@ typedef tree<
             tree<void*, int, long>,
             char
         > tree_seq;
-            
+
+typedef tree<
+            mpl::int_<1>,
+            tree<mpl::int_<2>, mpl::int_<3>, mpl::int_<4> >,
+            mpl::int_<5>
+        > tree_seq1;
+
 static_assert(
         mpl::equal<
             mpl::vector<short, int, long>,
@@ -120,15 +123,28 @@ static_assert(
         >::value,
         "postorder");
 
-typedef tree<
-            mpl::int_<0>,
-            tree<mpl::int_<1>, mpl::int_<2>, mpl::int_<3> >,
-            mpl::int_<4>
-        > tree_seq1;
+static_assert(
+        mpl::equal<
+            preorder_view<tree_seq1>::type,
+            mpl::vector_c<int, 1, 2, 3, 4, 5>,
+            mpl::equal_to<_, _>
+        >::value,
+        "tree_seq1 preorder");
+
 static_assert(
         mpl::equal<
             inorder_view<tree_seq1>::type,
-            mpl::vector_c<int, 1, 3, 0, 4>
+            mpl::vector_c<int, 3, 2, 4, 1, 5>,
+            mpl::equal_to<_, _>
         >::value,
-        "inorder2");
+        "tree_seq1 inorder");
+
+static_assert(
+        mpl::equal<
+            postorder_view<tree_seq1>::type,
+            mpl::vector_c<int, 3, 4, 2, 5, 1>,
+            mpl::equal_to<_, _>
+        >::value,
+        "tree_seq1 postorder");
+
 } /* end of namespace test_5_10 */

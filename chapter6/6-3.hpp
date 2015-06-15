@@ -1,44 +1,52 @@
 #include "tree.hpp"
 
-template <class Tree, class T>
-struct inserter_impl 
-    :mpl::if_<
-        mpl::less<T, typename Tree::root>,
-        tree<
-            typename Tree::root,
-            typename inserter_impl<typename Tree::lhs, T>::type,
-            typename Tree::rhs
-        >,
-        tree<
-            typename Tree::root,
-            typename Tree::lhs,
-            typename inserter_impl<typename Tree::rhs, T>::type
-        >
-    > {
-};
+namespace boost { namespace mpl {
 
-template <class T>
-struct inserter_impl<none, T> 
-    :tree<T> {
-};
+template <>
+struct push_back_impl<tree_tag> {
+    template <class Item, class Node>
+    struct apply
+        :mpl::eval_if<
+            mpl::less<Item, Node>,
+            tree<Item, Node>,
+            tree<Item, void_, Node>
+         > {
+    };
 
-template <class T>
-struct inserter_impl<tree<none, none, none>, T> 
-    :tree<T> {
-};
+    template <class Root, class LHS, class RHS, class Node>
+    struct apply<tree<Root, LHS, RHS>, Node> 
+        :mpl::eval_if<
+            mpl::less<Node, Root>,
+            tree<
+                Root,
+                typename apply<LHS, Node>::type,
+                RHS
+            >,
+            tree<
+                Root,
+                LHS,
+                typename apply<RHS, Node>::type
+            >
+        > {
+    };
 
-struct inserter {
-    template <class Tree, class T>
-    struct apply 
-        :inserter_impl<Tree, T> {
+    template <class Node>
+    struct apply<tree<>, Node> 
+        :tree<Node> {
+    };
+
+    template <class Node>
+    struct apply<void_, Node> 
+        : tree<Node> {
     };
 };
 
+}} /* end of namespace boost::mpl */
 
 template <class State>
 struct binary_tree_inserter {
     typedef State state;
-    typedef inserter operation;
+    typedef mpl::push_back<_, _> operation;
 };
 
 namespace test_6_3 {
@@ -47,10 +55,12 @@ typedef mpl::copy<
             mpl::vector_c<int, 3, 4>,
             binary_tree_inserter<tree<> >
         >::type bst;
+
 static_assert(
         mpl::equal<
             inorder_view<bst>::type,
-            mpl::vector_c<int, 3, 4>
+            mpl::vector_c<int, 3, 4>,
+            mpl::equal_to<_, _>
         >::value, 
         "4, 3");
 
